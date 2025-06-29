@@ -3,6 +3,8 @@ package com.giacomo.potenza.InnovationFintech.entity;
 
 import jakarta.persistence.*;
 
+import java.util.Date;
+
 @Entity
 public class RichiestaFinanziamento {
     @Id

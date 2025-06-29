@@ -1,29 +1,41 @@
 package com.giacomo.potenza.InnovationFintech.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "[User]", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "matricola")
+})
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
+
+
     @Id
-    private String matricola;
-    private String nome;
-    private String cognome;
-    private String password;
-    private String email;
-    private String ruolo;
+    @Column(length = 20, nullable = false)
+    public String matricola;
 
-    // Costruttori
-    public User() {}
+    @Column(length = 255)
+    public String nome;
 
-    public User(String matricola, String nome, String cognome, String password, String email, String ruolo) {
-        this.matricola = matricola;
-        this.nome = nome;
-        this.cognome = cognome;
-        this.password = password;
-        this.email = email;
-        this.ruolo = ruolo;
-    }
+    @Column(length = 255)
+    public String cognome;
 
-    // Getter e Setter
-    // (Aggiungi qui i metodi getter e setter)
+    @Column(nullable = false, length = 255)
+    public String password;
+
+    @Column(length = 255)
+    public String email;
+
+    @Column(length = 255)
+    public String ruolo;
+
 }

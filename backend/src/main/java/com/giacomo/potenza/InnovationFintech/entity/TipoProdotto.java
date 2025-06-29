@@ -2,6 +2,8 @@ package com.giacomo.potenza.InnovationFintech.entity;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 public class TipoProdotto {
     @Id

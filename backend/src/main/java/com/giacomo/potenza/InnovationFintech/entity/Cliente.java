@@ -3,6 +3,10 @@ package com.giacomo.potenza.InnovationFintech.entity;
 
 import jakarta.persistence.*;
 
+import java.util.Date;
+import java.util.List;
+
+
 @Entity
 public class Cliente {
     @Id
