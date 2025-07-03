@@ -90,24 +90,26 @@ public class UserController {
 
     /**
      * POST /api/users/login - Verifica credenziali di login
-     * @PostMapping("/login")
-     *     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest loginRequest) {
-     *         boolean isValid = userService.verifyLogin(loginRequest.getEmail(), loginRequest.getPassword());
-     *
-     *         Map<String, Object> response = new HashMap<>();
-     *         response.put("success", isValid);
-     *
-     *         if (isValid) {
-     *             User user = userService.getUserByEmail(loginRequest.getEmail()).orElse(null);
-     *             response.put("message", "Login effettuato con successo");
-     *             response.put("user", user);
-     *             return ResponseEntity.ok(response);
-     *         } else {
-     *             response.put("message", "Credenziali non valide");
-     *             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-     *         }
-     *     }
-     */
+     * login(@Valid @RequestBody LoginRequest loginRequest)
+*/
+    @PostMapping("/login")
+      public ResponseEntity<Map<String, Object>> login() {
+          //boolean isValid = userService.verifyLogin(loginRequest.getEmail(), loginRequest.getPassword());
+          boolean isValid = true;
+          Map<String, Object> response = new HashMap<>();
+          response.put("success", isValid);
+
+          if (isValid) {
+              //User user = userService.getUserByEmail(loginRequest.getEmail()).orElse(null);
+              response.put("message", "Login effettuato con successo");
+              //response.put("user", user);
+              return ResponseEntity.ok(response);
+          } else {
+              response.put("message", "Credenziali non valide");
+              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+          }
+      }
+
 
 
     /**

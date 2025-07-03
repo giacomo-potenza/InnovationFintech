@@ -14,7 +14,7 @@ export class HeaderComponent implements OnInit{
    constructor(private authService: AuthService) {}
 
    ngOnInit(): void {
-    this.utente = this.authService.getUtenteLoggato(); // es: { matricola: 'A1234', tipo: 'manager' }
+    //this.utente = this.authService.getUtenteLoggato(); // es: { matricola: 'A1234', tipo: 'manager' }
   }
 }
 

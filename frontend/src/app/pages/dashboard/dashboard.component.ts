@@ -1,139 +1,285 @@
-// import { Component, OnInit, OnDestroy } from '@angular/core';
-// import { Subject, takeUntil, forkJoin } from 'rxjs';
-// import { AuthService } from '../../core/services/auth.service';
-// import { DashboardService } from '../../core/services/dashboard.service';
-// import { PracticesService } from '../../core/services/practices.service';
-// import { User } from '../../core/models/user.model';
-// import { Practice, PracticeFilter, PracticeStatus } from '../../core/models/practice.model';
-// import { DashboardStats, ChartData, DateFilter } from '../../core/models/dashboard.model';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Subject } from 'rxjs';
+import { NgIf } from '@angular/common';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { SidebarComponent } from '../../component/sidebar/sidebar.component';
 
-// @Component({
-//   selector: 'app-dashboard',
-//   templateUrl: './dashboard.component.html',
-//   styleUrls: ['./dashboard.component.scss']
-// })
-// export class DashboardComponent implements OnInit, OnDestroy {
-//   private destroy$ = new Subject<void>();
+// Interfaces
+export interface Pratica {
+  id: number;
+  protocollo: string;
+  codiceFiscale: string;
+  data: string;
+  importo: number;
+  statoPratica: StatoPratica;
+}
 
-//   currentUser: User | null = null;
-//   sidebarOpen = false;
+export enum StatoPratica {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  PROCESSING = 'PROCESSING'
+}
+
+export interface FiltersData {
+  dataInizio?: string;
+  dataFine?: string;
+  protocollo?: string;
+  codiceFiscale?: string;
+}
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+@Component({
+  selector: 'app-dashboard',
+  imports: [SidebarComponent, NgIf],
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css']
+})
+export class DashboardComponent implements OnInit, OnDestroy {
+  // Form
   
-//   // Dashboard data
-//   stats: DashboardStats | null = null;
-//   chartData: ChartData | null = null;
-//   practices: Practice[] = [];
+
+  filtersForm!: FormGroup;
   
-//   // Filters & Pagination
-//   practiceFilter: PracticeFilter = {};
-//   currentPage = 0;
-//   pageSize = 10;
-//   totalElements = 0;
-//   totalPages = 0;
   
-//   // Date filter
-//   dateFilter: DateFilter = {
-//     periodo: 'mese',
-//     dataInizio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-//     dataFine: new Date()
-//   };
+  // Data
+  pratiche: Pratica[] = [];
+  totalElements = 0;
+  totalPages = 0;
+  currentPage = 0;
+  pageSize = 10;
+  
+  // State
+  loading = false;
+  currentFilters: FiltersData = {};
+  
+  // Utilities
+  private destroy$ = new Subject<void>();
+  private baseUrl = 'http://localhost:8080/api/pratiche';
 
-//   // Loading states
-//   loading = {
-//     stats: false,
-//     chart: false,
-//     practices: false
-//   };
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private http: HttpClient
+  ) {
+    this.initializeForm();
+  }
 
-//   // Practice status options
-//   practiceStatusOptions = Object.values(PracticeStatus);
+  ngOnInit(): void {
+    this.setupFormSubscription();
+    this.loadPratiche();
+  }
 
-//   constructor(
-//     private authService: AuthService,
-//     private dashboardService: DashboardService,
-//     private practicesService: PracticesService
-//   ) {}
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-//   ngOnInit(): void {
-//     this.authService.currentUser$
-//       .pipe(takeUntil(this.destroy$))
-//       .subscribe(user => {
-//         this.currentUser = user;
-//       });
+  // Form Management
+  private initializeForm(): void {
+    this.filtersForm = this.fb.group({
+      dataInizio: [''],
+      dataFine: [''],
+      protocollo: [''],
+      codiceFiscale: ['']
+    });
+  }
 
-//     this.loadDashboardData();
-//     this.loadPractices();
-//   }
+  private setupFormSubscription(): void {
+    this.filtersForm.valueChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(filters => {
+        this.currentFilters = this.cleanFilters(filters);
+        this.currentPage = 0;
+        this.loadPratiche();
+      });
+  }
 
-//   ngOnDestroy(): void {
-//     this.destroy$.next();
-//     this.destroy$.complete();
-//   }
+  clearFilters(): void {
+    this.filtersForm.reset();
+  }
 
-//   toggleSidebar(): void {
-//     this.sidebarOpen = !this.sidebarOpen;
-//   }
-
-//   logout(): void {
-//     this.authService.logout();
-//   }
-
-//   loadDashboardData(): void {
-//     this.loading.stats = true;
-//     this.loading.chart = true;
-
-//     forkJoin({
-//       stats: this.dashboardService.getStats(this.dateFilter),
-//       chartData: this.dashboardService.getChartData('entrate', this.dateFilter)
-//     }).pipe(takeUntil(this.destroy$))
-//     .subscribe({
-//       next: ({ stats, chartData }) => {
-//         this.stats = stats;
-//         this.chartData = chartData;
-//         this.loading.stats = false;
-//         this.loading.chart = false;
-//       },
-//       error: () => {
-//         this.loading.stats = false;
-//         this.loading.chart = false;
-//       }
-//     });
-//   }
-
-//   loadPractices(): void {
-//     this.loading.practices = true;
+  private cleanFilters(filters: any): FiltersData {
+    const cleaned: FiltersData = {};
     
-//     this.practicesService.getPractices(this.currentPage, this.pageSize, this.practiceFilter)
-//       .pipe(takeUntil(this.destroy$))
-//       .subscribe({
-//         next: (response) => {
-//           this.practices = response.content;
-//           this.totalElements = response.totalElements;
-//           this.totalPages = response.totalPages;
-//           this.loading.practices = false;
-//         },
-//         error: () => {
-//           this.loading.practices = false;
-//         }
-//       });
-//   }
+    Object.keys(filters).forEach(key => {
+      const value = filters[key];
+      if (value && typeof value === 'string' && value.trim() !== '') {
+        cleaned[key as keyof FiltersData] = value.trim();
+      } else if (value && typeof value !== 'string') {
+        cleaned[key as keyof FiltersData] = value;
+      }
+    });
+    
+    return cleaned;
+  }
 
-//   onFilterChange(): void {
-//     this.currentPage = 0;
-//     this.loadPractices();
-//   }
+  // Data Loading
+  private loadPratiche(): void {
+    this.loading = true;
+    
+    let params = new HttpParams()
+      .set('page', this.currentPage.toString())
+      .set('size', this.pageSize.toString());
 
-//   onDateFilterChange(): void {
-//     this.loadDashboardData();
-//   }
+    // Add filters to params
+    if (this.currentFilters.dataInizio) {
+      params = params.set('dataInizio', this.currentFilters.dataInizio);
+    }
+    if (this.currentFilters.dataFine) {
+      params = params.set('dataFine', this.currentFilters.dataFine);
+    }
+    if (this.currentFilters.protocollo) {
+      params = params.set('protocollo', this.currentFilters.protocollo);
+    }
+    if (this.currentFilters.codiceFiscale) {
+      params = params.set('codiceFiscale', this.currentFilters.codiceFiscale);
+    }
 
-//   onPageChange(page: number): void {
-//     this.currentPage = page;
-//     this.loadPractices();
-//   }
+    this.http.get<PaginatedResponse<Pratica>>(this.baseUrl, { params })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.pratiche = response.content;
+          this.totalElements = response.totalElements;
+          this.totalPages = response.totalPages;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Errore nel caricamento delle pratiche:', error);
+          this.loading = false;
+          // In caso di errore, mostra dati mock per development
+          this.loadMockData();
+        }
+      });
+  }
 
-//   clearFilters(): void {
-//     this.practiceFilter = {};
-//     this.currentPage = 0;
-//     this.loadPractices();
-//   }
-// }
+  // Mock data for development/testing
+  private loadMockData(): void {
+    const mockPratiche: Pratica[] = [
+      {
+        id: 1,
+        protocollo: 'PROT-2024-001',
+        codiceFiscale: 'RSSMRA80A01H501Z',
+        data: '2024-01-15',
+        importo: 15000.00,
+        statoPratica: StatoPratica.APPROVED
+      },
+      {
+        id: 2,
+        protocollo: 'PROT-2024-002',
+        codiceFiscale: 'BNCGVN85B02H501A',
+        data: '2024-01-16',
+        importo: 25000.00,
+        statoPratica: StatoPratica.PROCESSING
+      },
+      {
+        id: 3,
+        protocollo: 'PROT-2024-003',
+        codiceFiscale: 'VRDLCU90C03H501B',
+        data: '2024-01-17',
+        importo: 8000.00,
+        statoPratica: StatoPratica.PENDING
+      },
+      {
+        id: 4,
+        protocollo: 'PROT-2024-004',
+        codiceFiscale: 'NRTFNC75D04H501C',
+        data: '2024-01-18',
+        importo: 12000.00,
+        statoPratica: StatoPratica.REJECTED
+      },
+      {
+        id: 5,
+        protocollo: 'PROT-2024-005',
+        codiceFiscale: 'GLLMTT88E05H501D',
+        data: '2024-01-19',
+        importo: 30000.00,
+        statoPratica: StatoPratica.APPROVED
+      }
+    ];
+
+    // Apply filters to mock data
+    let filteredData = mockPratiche;
+    
+    if (this.currentFilters.protocollo) {
+      filteredData = filteredData.filter(p => 
+        p.protocollo.toLowerCase().includes(this.currentFilters.protocollo!.toLowerCase())
+      );
+    }
+    
+    if (this.currentFilters.codiceFiscale) {
+      filteredData = filteredData.filter(p => 
+        p.codiceFiscale.toLowerCase().includes(this.currentFilters.codiceFiscale!.toLowerCase())
+      );
+    }
+
+    this.pratiche = filteredData;
+    this.totalElements = filteredData.length;
+    this.totalPages = Math.ceil(filteredData.length / this.pageSize);
+    this.loading = false;
+  }
+
+  // Pagination
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.loadPratiche();
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadPratiche();
+    }
+  }
+
+  // Formatting Utilities
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('it-IT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount);
+  }
+
+  getStatusLabel(status: StatoPratica): string {
+    const statusLabels = {
+      [StatoPratica.PENDING]: 'In Attesa',
+      [StatoPratica.APPROVED]: 'Approvata',
+      [StatoPratica.REJECTED]: 'Rifiutata',
+      [StatoPratica.PROCESSING]: 'In Lavorazione'
+    };
+    return statusLabels[status] || status;
+  }
+
+  // Track by function for ngFor performance
+  trackByFn(index: number, item: Pratica): number {
+    return item.id;
+  }
+
+ 
+}

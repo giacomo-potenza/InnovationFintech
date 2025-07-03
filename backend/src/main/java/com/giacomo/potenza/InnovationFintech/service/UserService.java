@@ -6,7 +6,7 @@ import com.giacomo.potenza.InnovationFintech.repository.UserRepository;
 import com.giacomo.potenza.InnovationFintech.exception.UserNotFoundException;
 import com.giacomo.potenza.InnovationFintech.exception.UserAlreadyExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +20,8 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    /*@Autowired
+    private BCryptPasswordEncoder passwordEncoder;*/
 
     /**
      * Recupera tutti gli utenti
@@ -61,7 +61,7 @@ public class UserService {
 
         // Cripta la password se presente
         if (user.password != null && !user.password.isEmpty()) {
-            user.password = passwordEncoder.encode(user.password);
+            //user.password = passwordEncoder.encode(user.password);
         }
 
         return userRepository.save(user);
@@ -100,7 +100,7 @@ public class UserService {
      */
     public void updatePassword(String matricola, String newPassword) {
         User user = getUserByMatricola(matricola);
-        user.password = passwordEncoder.encode(newPassword);
+        //user.password = passwordEncoder.encode(newPassword);
         userRepository.save(user);
     }
 
@@ -110,7 +110,7 @@ public class UserService {
     public boolean verifyLogin(String email, String password) {
         Optional<User> user = getUserByEmail(email);
         if (user.isPresent() && user.get().password != null) {
-            return passwordEncoder.matches(password, user.get().password);
+            //return passwordEncoder.matches(password, user.get().password);
         }
         return false;
     }

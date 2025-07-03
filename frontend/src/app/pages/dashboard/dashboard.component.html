@@ -1,0 +1,148 @@
+<div class="dashboard-container">
+  <!-- Sidebar -->
+    <app-sidebar></app-sidebar>
+
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="content-header">
+      <h1>Dashboard Pratiche</h1>
+      <p class="subtitle">Gestione e monitoraggio delle pratiche finanziarie</p>
+    </header>
+
+    <!-- Filters Section -->
+    <section class="filters-section">
+      <div class="filters-card">
+        <h3>Filtri di Ricerca</h3>
+        <form []="filtersForm" class="filters-form">
+          <div class="filters-grid">
+            <div class="filter-group">
+              <label for="dataInizio">Data Inizio</label>
+              <input 
+                type="date" 
+                id="dataInizio"
+                formControlName="dataInizio"
+                class="form-control">
+            </div>
+
+            <div class="filter-group">
+              <label for="dataFine">Data Fine</label>
+              <input 
+                type="date" 
+                id="dataFine"
+                formControlName="dataFine"
+                class="form-control">
+            </div>
+
+            <div class="filter-group">
+              <label for="protocollo">Protocollo</label>
+              <input 
+                type="text" 
+                id="protocollo"
+                formControlName="protocollo"
+                placeholder="Inserisci protocollo..."
+                class="form-control">
+            </div>
+
+            <div class="filter-group">
+              <label for="codiceFiscale">Codice Fiscale</label>
+              <input 
+                type="text" 
+                id="codiceFiscale"
+                formControlName="codiceFiscale"
+                placeholder="Inserisci codice fiscale..."
+                class="form-control">
+            </div>
+
+            <div class="filter-actions">
+              <button 
+                type="button" 
+                (click)="clearFilters()"
+                class="btn btn-clear"
+                [disabled]="loading">
+                Pulisci Filtri
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Table Section -->
+    <section class="table-section">
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Elenco Pratiche</h3>
+          <div class="table-info" *ngIf="!loading">
+            Totale: {{ totalElements }} pratiche
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="loading-container">
+          <div class="spinner"></div>
+          <p>Caricamento in corso...</p>
+        </div>
+
+        <!-- Table -->
+        <div *ngIf="!loading" class="table-wrapper">
+          <table class="data-table" *ngIf="pratiche.length > 0; else noDataTemplate">
+            <thead>
+              <tr>
+                <th>Protocollo</th>
+                <th>Codice Fiscale</th>
+                <th>Data</th>
+                <th>Importo</th>
+                <th>Stato Pratica</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pratica of pratiche; trackBy: trackByFn">
+                <td class="protocol-cell">{{ pratica.protocollo }}</td>
+                <td class="fiscal-code-cell">{{ pratica.codiceFiscale }}</td>
+                <td class="date-cell">{{ formatDate(pratica.data) }}</td>
+                <td class="amount-cell">{{ formatCurrency(pratica.importo) }}</td>
+                <td class="status-cell">
+                  <span [class]="'status-badge status-' + pratica.statoPratica.toLowerCase()">
+                    {{ getStatusLabel(pratica.statoPratica) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- No Data Template -->
+          <ng-template #noDataTemplate>
+            <div class="no-data">
+              <div class="no-data-icon">📄</div>
+              <h4>Nessuna pratica trovata</h4>
+              <p>Non ci sono pratiche che corrispondono ai filtri selezionati.</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="!loading && totalElements > pageSize">
+          <button 
+            class="pagination-btn"
+            [disabled]="currentPage === 0"
+            (click)="previousPage()">
+            ← Precedente
+          </button>
+          
+          <span class="pagination-info">
+            Pagina {{ currentPage + 1 }} di {{ totalPages }}
+          </span>
+          
+          <button 
+            class="pagination-btn"
+            [disabled]="currentPage >= totalPages - 1"
+            (click)="nextPage()">
+            Successiva →
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

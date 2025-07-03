@@ -37,6 +37,7 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
+    
     const expiresAt = localStorage.getItem('expires_at');
     if (!expiresAt) return false;
     return Date.now() < parseInt(expiresAt);
