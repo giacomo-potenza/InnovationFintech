@@ -10,13 +10,13 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent, // Questo contiene sidebar + router-outlet
-    /*children: [
+    children: [
       { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-      //{ path: 'ordermanagment', component: OrdersManagementComponent }
-      //{ path: 'portfolio', component: PortfolioComponent },
-      //{ path: 'analytics', component: AnalyticsComponent },
-      //{ path: 'settings', component: SettingsComponent }
-    ]*/
+      // { path: 'ordermanagment', component: OrdersManagementComponent }
+      // { path: 'portfolio', component: PortfolioComponent },
+      // { path: 'analytics', component: AnalyticsComponent },
+      // { path: 'settings', component: SettingsComponent }
+    ]
   }
 ];
 

@@ -1,28 +1,29 @@
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+// import { NgModule } from '@angular/core';
+// import { BrowserModule } from '@angular/platform-browser';
+// import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+// import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
+// import { AppRoutingModule } from './app-routing.module';
+// import { AppComponent } from './app.component';
 
-// Core Services e Interceptors
-import { AuthInterceptor } from './core/services/auth.interceptor';
+// // Core Services e Interceptors
 
-@NgModule({
+// import { authInterceptor } from './core/services/auth.interceptor';
+
+// @NgModule({
   
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    HttpClientModule,
-    BrowserAnimationsModule
-  ],
-  providers: [
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true
-    }
-  ]
-})
-export class AppModule { }
+//   imports: [
+//     BrowserModule,
+//     AppRoutingModule,
+//     HttpClientModule,
+//     BrowserAnimationsModule
+//   ],
+//   providers: [
+//     {
+//       provide: HTTP_INTERCEPTORS,
+//       useClass: authInterceptor,
+//       multi: true
+//     }
+//   ]
+// })
+// export class AppModule { }
