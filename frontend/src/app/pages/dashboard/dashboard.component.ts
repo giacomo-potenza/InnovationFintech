@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Subject } from 'rxjs';
-import { NgIf } from '@angular/common';
+import { NgClass, TitleCasePipe, CommonModule } from '@angular/common';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { SidebarComponent } from '../../component/sidebar/sidebar.component';
 
@@ -41,7 +41,7 @@ export interface PaginatedResponse<T> {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [SidebarComponent, NgIf],
+  imports: [CommonModule, TitleCasePipe,  SidebarComponent, NgClass, RouterModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -69,7 +69,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router,
     private http: HttpClient
   ) {
     this.initializeForm();

@@ -8,12 +8,11 @@ export interface User {
 }
 
 export interface LoginRequest {
-  matricola: string;
+  email: string;
   password: string;
 }
 
 export interface LoginResponse {
   token: string;
   user: User;
-  expiresIn: number;
 }

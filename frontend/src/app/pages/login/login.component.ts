@@ -30,10 +30,12 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Redirect se già loggato
-    if (this.authService.isLoggedIn()) {
+     // Se l'utente è già autenticato, reindirizza alla dashboard
+    if (this.authService.isAuthenticated()) {
       this.router.navigate(['/dashboard']);
+      return;
     }
+
   }
 
   onSubmit(): void {
@@ -43,11 +45,12 @@ export class LoginComponent implements OnInit {
 
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
+          this.loading = false;
           this.router.navigate(['/dashboard']);
         },
         error: (error) => {
-          // this.error = 'Credenziali non valide';
-          // this.loading = false;
+          //this.error = 'Credenziali non valide';
+          this.loading = false;
           this.router.navigate(['/dashboard']);
         }
       });

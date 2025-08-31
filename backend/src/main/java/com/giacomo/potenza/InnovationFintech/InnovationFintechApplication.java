@@ -13,7 +13,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class InnovationFintechApplication {
 
 	public static void main(String[] args) {
+		System.out.println("Starting Spring Boot...");
 		SpringApplication.run(InnovationFintechApplication.class, args);
+		System.out.println("Spring Boot started.");
 
 	}
 
